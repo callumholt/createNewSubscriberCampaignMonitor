@@ -3,27 +3,29 @@ import React, { useState } from "react";
 function Form() {
     let [formData, setFormData] = useState({
         name: "",
-        email: "",
-        mobileNumber: ""
+        EmailAddress: "",
+        mobileNumber: "",
+        ConsentToTrack:"Yes"
     });
 
     let handleChange = event => {
         setFormData({...formData, [event.target.name]: event.target.value})
     } 
 
-    let fetchUrl = "https://api.createsend.com/api/v3.3/subscribers/{listid}.{json}";
+    let fetchUrl = "";
     let listid = "01b878301bcb335ed0a793acecbefc8c";
     // let json = "formData";
 
 
     let handleSubmit = async event => {
         event.preventDefault();
-        const response = await fetch(fetchUrl, {
+        const response = await fetch(`https://cors-anywhere.herokuapp.com/https://api.createsend.com/api/v3.3/subscribers/01b878301bcb335ed0a793acecbefc8c.json?pretty=true`, {
             method: "POST",
-            headers: {"content-type":"application/json"},
-            body: JSON.stringify(formData)
-        });
-        alert("thanks for the submission");
+            headers: {"content-type":"application/json", 'Authorization': 'Basic ' + btoa('taH4GgL4dU3euCrrqELgetnfouX4umiH2f/yrGkmyj09WC+cVKaMqm1URYxdlT+ogcdtzj+tuG981L5DXA/TVrbzLm88aaNgplrpLesqARtnyV3t20USCabzWQIaPCoy/rUrBdID8lsr542/EhOChw==:x')},
+            body: JSON.stringify(formData), 
+        })
+        .then(res => res.json())
+        .then(res => console.log(res))
         
         if(!response.ok) {
             console.error("an error occured");
@@ -44,8 +46,8 @@ function Form() {
                 </div>
                 <div className="formGroup">
                 <label>
-                        Email:
-                        <input name="email" onChange={handleChange}/>
+                    EmailAddress:
+                        <input name="EmailAddress" onChange={handleChange}/>
                     </label>
 
                 </div>
