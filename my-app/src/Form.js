@@ -1,71 +1,192 @@
 import React, { useState } from "react";
+import SubmissionTextArea from "./SubmissionTextArea";
 
-function Form() {
-    let [formData, setFormData] = useState({
-        name: "",
-        EmailAddress: "",
-        mobileNumber: "",
-        ConsentToTrack:"Yes"
-    });
+function Form(props) {
+  let [name, setName] = useState("");
 
-    let handleChange = event => {
-        setFormData({...formData, [event.target.name]: event.target.value})
-    } 
+  const updateName = (value) => {
+    setName(value);
+  };
 
-    let fetchUrl = "";
-    let listid = "01b878301bcb335ed0a793acecbefc8c";
-    // let json = "formData";
+  let [formData, setFormData] = useState({
+    name: "",
+    EmailAddress: "",
+    ConsentToTrack: "Yes",
+    InvoiceNumber: "",
+    supplier: "",
+    principle: "",
+    reoccuringPayment: "",
+    remainingTerm: "",
+  });
 
+  let handleChange = (event) => {
+    setFormData({ ...formData, [event.target.name]: event.target.value });
+  };
 
-    let handleSubmit = async event => {
-        event.preventDefault();
-        const response = await fetch(`https://cors-anywhere.herokuapp.com/https://api.createsend.com/api/v3.3/subscribers/01b878301bcb335ed0a793acecbefc8c.json?pretty=true`, {
-            method: "POST",
-            headers: {"content-type":"application/json", 'Authorization': 'Basic ' + btoa('taH4GgL4dU3euCrrqELgetnfouX4umiH2f/yrGkmyj09WC+cVKaMqm1URYxdlT+ogcdtzj+tuG981L5DXA/TVrbzLm88aaNgplrpLesqARtnyV3t20USCabzWQIaPCoy/rUrBdID8lsr542/EhOChw==:x')},
-            body: JSON.stringify(formData), 
-        })
-        .then(res => res.json())
-        .then(res => console.log(res))
-        
-        if(!response.ok) {
-            console.error("an error occured");
-        }
+  ////
+
+  let handleSubmit = async (event) => {
+    event.preventDefault();
+
+    // Format the currency fields
+    const formatCurrency = (value) => {
+      return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
     };
 
+    const formattedFormData = {
+      ...formData,
+      principle: formatCurrency(formData.principle),
+      reoccuringPayment: formatCurrency(formData.reoccuringPayment),
+    };
 
+    console.log("formData:", formattedFormData);
 
-    return (
-        <div id="form">
-            <form onSubmit={handleSubmit}>
-                <div className="formGroup">
-                <label>
-                        Name: 
-                        <input name="name" onChange={handleChange}/>
-                    </label>
+    let postData = {
+      EmailAddress: formattedFormData.EmailAddress,
+      Name: formattedFormData.name,
+      CustomFields: [
+        {
+          Key: "supplier",
+          Value: formattedFormData.supplier,
+        },
+        {
+          Key: "invoiceNumber",
+          Value: formattedFormData.InvoiceNumber,
+        },
+        {
+          Key: "principle",
+          Value: formattedFormData.principle,
+        },
+        {
+          Key: "reoccuringPayment",
+          Value: formattedFormData.reoccuringPayment,
+        },
+        {
+          Key: "remainingTerm",
+          Value: formattedFormData.remainingTerm,
+        },
+      ],
+      ConsentToTrack: "Yes",
+    };
 
-                </div>
-                <div className="formGroup">
-                <label>
-                    EmailAddress:
-                        <input name="EmailAddress" onChange={handleChange}/>
-                    </label>
+    console.log("before fetch:", postData);
 
-                </div>
-                <div className="formGroup">
-                <label>
-                        MobileNumber:
-                        <input name="mobileNumber" onChange={handleChange}/>
-                    </label>
-
-                </div>
-                <div className="formGroup">
-                    <label id="submitButton">
-                        <button type="submit" >submit</button>
-                    </label>
-                </div>         
-            </form>
-        </div>
+    const response = await fetch(
+      `https://cors-anywhere.herokuapp.com/https://api.createsend.com/api/v3.3/subscribers/aa774c3006b8f3a728b0b07fe92173e8.json`,
+      {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          authorization:
+            "Basic dGFINEdnTDRkVTNldUNycnFFTGdldG5mb3VYNHVtaUgyZi95ckdrbXlqMDlXQytjVkthTXFtMVVSWXhkbFQrb2djZHR6ait0dUc5ODFMNURYQS9UVnJiekxtODhhYU5ncGxycExlc3FBUnRueVYzdDIwVVNDYWJ6V1FJYVBDb3kvclVyQmRJRDhsc3I1NDIvRWhPQ2h3PT06",
+        },
+        body: JSON.stringify(postData),
+      }
     )
+      .then((res) => res.json())
+      .then((res) => console.log("response from POST request:", res));
+
+    if (!response.ok) {
+      console.error("an error occurred after fetch");
+    }
+  };
+
+  /////
+
+  return (
+    <div>
+      <div>
+        <SubmissionTextArea updateName={updateName} />
+      </div>
+
+      <div id="form">
+        <form onSubmit={handleSubmit}>
+          <div className="formGroup">
+            <label>
+              Name:
+              <input
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+              />
+            </label>
+          </div>
+
+          <div className="formGroup">
+            <label>
+              Email Address:
+              <input
+                name="EmailAddress"
+                value={formData.EmailAddress}
+                onChange={handleChange}
+              />
+            </label>
+          </div>
+
+          <div className="formGroup">
+            <label>
+              Invoice Number:
+              <input
+                name="InvoiceNumber"
+                value={formData.InvoiceNumber}
+                onChange={handleChange}
+              />
+            </label>
+          </div>
+
+          <div className="formGroup">
+            <label>
+              Supplier:
+              <input
+                name="supplier"
+                value={formData.supplier}
+                onChange={handleChange}
+              />
+            </label>
+          </div>
+
+          <div className="formGroup">
+            <label>
+              Principle:
+              <input
+                name="principle"
+                value={formData.principle}
+                onChange={handleChange}
+              />
+            </label>
+          </div>
+
+          <div className="formGroup">
+            <label>
+              Reoccuring Payment:
+              <input
+                name="reoccuringPayment"
+                value={formData.reoccuringPayment}
+                onChange={handleChange}
+              />
+            </label>
+          </div>
+
+          <div className="formGroup">
+            <label>
+              Remaining Term:
+              <input
+                name="remainingTerm"
+                value={formData.remainingTerm}
+                onChange={handleChange}
+              />
+            </label>
+          </div>
+
+          <div className="formGroup">
+            <label id="submitButton">
+              <button type="submit">submit</button>
+            </label>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
 }
 
 export default Form;
